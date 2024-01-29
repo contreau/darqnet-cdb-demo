@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Demo - Web3Modal</title>
+    <style>
+      html,
+      body {
+        padding: 0;
+        margin: 0;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+      body {
+        background-color: #0a1027;
+        color: #ffffff;
+        font-family: system-ui;
+        padding: 0 5em;
+        font-size: 1.125rem;
+      }
+
+      header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        border-bottom: solid 0.5px #ffffff3b;
+      }
+
+      w3m-button {
+        margin: 0 auto;
+      }
+
+      .sign--container {
+        text-align: center;
+      }
+
+      .sign-button {
+        display: block;
+        margin: 2rem auto;
+        font: inherit;
+        padding: 0.5em 1em;
+        border-radius: 30px;
+        border: none;
+        color: #ffffff;
+        background-color: #019765;
+        cursor: pointer;
+        transition: 0.3s all;
+        opacity: 0;
+        animation: fadeIn 0.6s ease-in forwards;
+        &:hover {
+          background-color: #02714c;
+        }
+      }
+
+      .jwe-result {
+        text-align: center;
+        opacity: 0;
+        animation: fadeIn 0.6s ease-in forwards;
+      }
+
+      @keyframes fadeIn {
+        100% {
+          opacity: 1;
+        }
+      }
+
+      .entries-display {
+        display: flex;
+        gap: 5rem;
+        justify-content: center;
+        align-items: center;
+        margin-bottom: 2rem;
+      }
+
+      .entry {
+        h2,
+        p {
+          text-align: center;
+        }
+        p {
+          background-color: #1760d6;
+          border-radius: 15px;
+          padding: 0.5em;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <img
+          src="../public/blockchain-40.svg"
+          alt="server"
+          width="40"
+          height="40"
+        />
+        <h1>Darqnet + Web3Modal Demo</h1>
+      </header>
+      <div class="entries-display">
+        <div class="entry">
+          <h2>Dreams</h2>
+          <p>tortor condimentum lacinia quis.</p>
+        </div>
+        <div class="entry">
+          <h2>Conjurations</h2>
+          <p>vulputate enim nulla aliquet porttitor lacus.</p>
+        </div>
+        <div class="entry">
+          <h2>Essence</h2>
+          <p>nunc lobortis mattis aliquam faucibus.</p>
+        </div>
+      </div>
+      <div class="modal-container">
+        <w3m-button size="md" balance="hide"></w3m-button>
+      </div>
+      <div class="sign--container"></div>
+      <script type="module" src="./demo.js" defer></script>
+    </main>
+  </body>
+</html>

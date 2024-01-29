@@ -1,0 +1,28 @@
+{
+  "name": "w3modal-dnet-demo",
+  "source": "src/index.html",
+  "scripts": {
+    "dev": "parcel",
+    "build": "rm -rf dist && parcel build",
+    "predeploy": "rm -rf dist && parcel build src/index.html --public-url .",
+    "deploy": "gh-pages -d dist"
+  },
+  "@parcel/resolver-default": {
+    "packageExports": true
+  },
+  "devDependencies": {
+    "parcel": "^2.0.0-nightly.1293",
+    "process": "^0.11.10"
+  },
+  "dependencies": {
+    "@ceramicnetwork/http-client": "^1.5.8-rc.0",
+    "@ceramicnetwork/stream-tile": "^1.5.8-rc.0",
+    "@stablelib/sha256": "^1.0.1",
+    "@wagmi/core": "^1.4.13",
+    "@web3modal/wagmi1": "^4.0.0-544a28f1",
+    "dids": "^2.4.0",
+    "key-did-provider-ed25519": "^1.1.0",
+    "key-did-resolver": "^1.4.0",
+    "viem": "^1.21.4"
+  }
+}
