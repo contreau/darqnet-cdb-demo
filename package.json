@@ -11,18 +11,23 @@
     "packageExports": true
   },
   "devDependencies": {
+    "crypto-browserify": "^3.12.0",
     "parcel": "^2.0.0-nightly.1293",
+    "path-browserify": "^1.0.1",
     "process": "^0.11.10"
   },
   "dependencies": {
     "@ceramicnetwork/http-client": "^1.5.8-rc.0",
     "@ceramicnetwork/stream-tile": "^1.5.8-rc.0",
+    "@composedb/cli": "^0.6.1",
+    "@composedb/client": "^0.6.0",
     "@stablelib/sha256": "^1.0.1",
     "@wagmi/core": "^1.4.13",
     "@web3modal/wagmi1": "^4.0.0-544a28f1",
     "dids": "^2.4.0",
     "key-did-provider-ed25519": "^1.1.0",
     "key-did-resolver": "^1.4.0",
+    "sss-wasm": "^0.4.0",
     "viem": "^1.21.4"
   }
 }
