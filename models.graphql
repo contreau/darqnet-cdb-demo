@@ -4,25 +4,22 @@ type Ritual
     accountRelation: SINGLE
     description: "Information for a given ritual."
   )
-  @createIndex(fields: [{ path: "ritualDID" }])
   @createIndex(fields: [{ path: "name" }])
   @createIndex(fields: [{ path: "date" }]) {
   ritualDID: DID! @documentAccount
   name: String! @string(minLength: 1, maxLength: 50)
   date: DateTime!
-  mainSecret: String!
 }
 
-# Users query their Shards via their userKeyDID
+# Users query their Shards via their userPKHDID
 # Shards used to query Rituals via the related ritualDID
 type Shard
   @createModel(
     accountRelation: LIST
     description: "A Shard tied to only one user and one ritual."
   )
-  @createIndex(fields: [{ path: "userKeyDID" }])
   @createIndex(fields: [{ path: "ritualDID" }]) {
-  userKeyDID: DID! @documentAccount
+  userPKHDID: DID! @documentAccount
   ritualDID: DID! @documentReference(model: "Ritual")
   ritual: Ritual! @relationDocument(property: "ritualDID")
   shardValue: String!
