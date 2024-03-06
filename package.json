@@ -1,5 +1,5 @@
 {
-  "name": "w3modal-dnet-demo",
+  "name": "dnet-w3m-demo",
   "source": "src/index.html",
   "scripts": {
     "dev": "parcel",
