@@ -6,13 +6,12 @@ type Ritual
   )
   @createIndex(fields: [{ path: "name" }])
   @createIndex(fields: [{ path: "date" }]) {
-  ritualDID: DID! @documentAccount
   name: String! @string(minLength: 1, maxLength: 50)
   date: DateTime!
 }
 
 # Users query their Shards via their userPKHDID
-# Shards used to query Rituals via the related ritualDID
+# Shards used to query Rituals via the StreamID
 type Shard
   @createModel(
     accountRelation: LIST
@@ -20,7 +19,7 @@ type Shard
   )
   @createIndex(fields: [{ path: "ritualDID" }]) {
   userPKHDID: DID! @documentAccount
-  ritualDID: DID! @documentReference(model: "Ritual")
-  ritual: Ritual! @relationDocument(property: "ritualDID")
+  ritualID: StreamID! @documentReference(model: "Ritual")
+  ritual: Ritual! @relationDocument(property: "ritualID")
   shardValue: String!
 }
