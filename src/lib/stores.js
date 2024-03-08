@@ -1,7 +1,6 @@
 // state
 let ritualName = "";
 let ritualDate = "";
-let ritualDID = "";
 const shards = [];
 const dreams = [];
 const conjurations = [];
@@ -21,7 +20,6 @@ function replaceComponent(current, replacement) {
 export default {
   ritualName,
   ritualDate,
-  ritualDID,
   shards,
   dreams,
   conjurations,

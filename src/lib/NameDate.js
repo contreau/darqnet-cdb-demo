@@ -69,6 +69,7 @@ export class NameDate extends HTMLElement {
           $.ritualName = input.value;
           $.ritualDate = new Date().toISOString();
           document.querySelector(".ritual-name").innerText = $.ritualName;
+          document.querySelector(".ritual-date").innerText = $.ritualDate;
           resolve(true);
         }
       });

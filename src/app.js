@@ -14,9 +14,6 @@ import { WalletLogin } from "./lib/WalletLogin";
 import { WriteIntentions } from "./lib/WriteIntentions";
 
 // encryption
-import { DID } from "dids";
-import { Ed25519Provider } from "key-did-provider-ed25519";
-import { getResolver } from "key-did-resolver";
 import * as Bip39 from "bip39";
 import * as seedsplit from "./js/seedsplit";
 import { CeramicClient } from "@ceramicnetwork/http-client";
@@ -58,22 +55,7 @@ async function openingCeremony(PT) {
   console.log("opening ceremony chosen");
   // generate main secret + create ritual DID
   const mainSecret = Bip39.generateMnemonic();
-  const seed = new Uint8Array(
-    Bip39.mnemonicToSeedSync(mainSecret).slice(0, 32)
-  );
-  const provider = new Ed25519Provider(seed);
-  const ritualDID = new DID({ provider, resolver: getResolver() });
-  await ritualDID.authenticate();
-  $.ritualDID = ritualDID.id;
-  document.querySelector(".ritual-did").innerText = $.ritualDID;
-  console.log(
-    "Ritual | Name:",
-    $.ritualName,
-    "| Date:",
-    $.ritualDate,
-    "|",
-    $.ritualDID
-  );
+  console.log("Ritual | Name:", $.ritualName, "| Date:", $.ritualDate);
 
   // get participant count & threshold
   await PT.finished;
