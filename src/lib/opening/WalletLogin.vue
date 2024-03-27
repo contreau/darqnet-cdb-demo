@@ -33,15 +33,14 @@ const chains = [mainnet, arbitrum];
 const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata });
 
 const modal = createWeb3Modal({
+  wagmiConfig,
+  projectId,
+  chains,
   themeVariables: {
     "--w3m-font-family": "system-ui",
     "--w3m-font-size-master": "12px",
     "--w3m-accent": "#1942F9",
   },
-  showQrModal: true,
-  wagmiConfig,
-  projectId,
-  chains,
 });
 
 // Modal event subscription
@@ -55,11 +54,15 @@ modal.subscribeEvents((event) => {
 });
 
 // watches web3 modal for changes
+let showAddress = ref(false);
+let address = ref("");
 watchAccount((account) => {
   // console.log("account changes:", account);
   if (account.isConnected) {
     currentlySignedIn = true;
     getWalletInfo(account.address);
+    address.value = account.address;
+    showAddress.value = true;
   }
   if (account.isDisconnected) {
     currentlySignedIn = false;
@@ -102,16 +105,13 @@ async function executeSignature() {
   } catch (err) {
     console.error(err);
     signButton.innerText = "Signature rejected.";
-    await new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(null);
-      }, 2000);
-    });
-    signButton.innerText = "I bless this offering";
+    setTimeout(() => {
+      signButton.innerText = "I bless this offering";
+    }, 2000);
   }
 }
 
-// Retrieves wallet address and creates signature button
+// Retrieves wallet address and reveals signature button
 let account = ref("");
 let isVisible = ref(false);
 async function getWalletInfo(accountAddress) {
@@ -140,8 +140,9 @@ async function disconnectAccount() {
 <template>
   <div class="wrapper">
     <div class="modal-container">
-      <w3m-button size="md" balance="hide"></w3m-button>
+      <w3m-button v-if="!showAddress" size="md" balance="hide" />
     </div>
+    <p v-if="showAddress">Welcome, {{ address }}.</p>
   </div>
   <div class="sign-container">
     <button
