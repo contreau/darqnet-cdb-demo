@@ -1,3 +1,27 @@
+<script setup>
+import { ref } from "vue";
+import { store } from "./lib/store";
+import Header from "../src/lib/Header.vue";
+import ChooseCeremony from "./lib/opening/ChooseCeremony.vue";
+import NameDate from "./lib/opening/NameDate.vue";
+import GetPT from "./lib/opening/GetPT.vue";
+import WriteIntentions from "./lib/opening/WriteIntentions.vue";
+</script>
+
+<template>
+  <Header />
+  <ChooseCeremony v-if="!store.ceremonyChosen" />
+  <!-- OPENING CEREMONY -->
+  <NameDate v-if="store.ceremonyChosen && !store.acquiredNameDate" />
+  <GetPT v-if="store.acquiredNameDate && !store.acquiredPT" />
+  <WriteIntentions
+    :participantLabel="store.participantLabel"
+    :key="store.rerender"
+    v-if="store.acquiredPT && !store.acquiredIntentions"
+  />
+</template>
+
+<style>
 :root {
   --purple: #1760d6;
 }
@@ -20,37 +44,12 @@ body {
   font-size: 1.125rem;
 }
 
-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  border-bottom: solid 0.5px #ffffff3b;
-}
-
 w3m-button {
   margin: 0 auto;
 }
 
 .sign-container {
   text-align: center;
-}
-
-.sign-button {
-  display: block;
-  margin: 2rem auto;
-  font: inherit;
-  padding: 0.5em 1em;
-  border-radius: 30px;
-  border: none;
-  color: #ffffff;
-  background-color: #019765;
-  cursor: pointer;
-  transition: 0.3s all;
-  opacity: 0;
-  animation: fadeIn 0.6s ease-in forwards;
-  &:hover {
-    background-color: #02714c;
-  }
 }
 
 .jwe-result {
@@ -99,21 +98,10 @@ w3m-button {
   }
 }
 
-.PT-tracker {
-  opacity: 0;
-  transition: opacity 0.3s;
-  display: flex;
-  gap: 1rem;
-
-  span {
-    color: #02a2fe;
-    font-weight: 500;
-  }
-}
-
 .participant-label {
   font-size: 1.8rem;
   text-align: center;
   opacity: 0;
   transition: opacity 0.3s;
 }
+</style>

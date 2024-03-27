@@ -21,32 +21,9 @@
       sizes="16x16"
       href="../public/favicon-16x16.png"
     />
-    <link rel="stylesheet" href="./css/main.css" />
-    <script type="module" src="./app.js" defer></script>
   </head>
   <body>
-    <header>
-      <img
-        src="../public/dnet-orb--300.png"
-        alt="server"
-        width="50"
-        height="50"
-      />
-      <h1>Darqnet + WalletConnect Demo</h1>
-    </header>
-    <div class="PT-tracker">
-      <p>
-        Ritual: <span class="ritual-name"></span> |
-        <span class="ritual-date"></span>
-      </p>
-      <p>Participants: <span class="p-count">?</span></p>
-      <p>Threshold: <span class="t-count">?</span></p>
-    </div>
-    <main>
-      <h3 class="participant-label">Participant</h3>
-      <section class="component-container">
-        <pick-cer></pick-cer>
-      </section>
-    </main>
+    <div id="app"></div>
+    <script type="module" src="./index.js"></script>
   </body>
 </html>

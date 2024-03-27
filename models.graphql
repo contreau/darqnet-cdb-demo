@@ -1,5 +1,5 @@
 # Rituals are queried from shards via the related ritualDID
-type Ritual
+type demoRitual
   @createModel(
     accountRelation: SINGLE
     description: "Information for a given ritual."
@@ -8,11 +8,12 @@ type Ritual
   @createIndex(fields: [{ path: "date" }]) {
   name: String! @string(minLength: 1, maxLength: 50)
   date: DateTime!
+  intentions: String!
 }
 
 # Users query their Shards via their userPKHDID
 # Shards used to query Rituals via the StreamID
-type Shard
+type demoShard
   @createModel(
     accountRelation: LIST
     description: "A Shard tied to only one user and one ritual."
