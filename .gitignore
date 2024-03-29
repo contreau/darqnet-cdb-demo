@@ -2,3 +2,7 @@ node_modules
 .parcel-cache
 .DS_Store
 dist/
+priv.key
+did.key
+queries.graphql
+composites
