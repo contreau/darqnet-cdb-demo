@@ -1,0 +1,19 @@
+type DemoRitual
+  @loadModel(
+    id: "kjzl6hvfrbw6ca0umk8zz2y39gunxcai5j88vq2rna6dppmbaqhz3mou4d9eyon"
+  ) {
+  id: ID!
+}
+
+# Users query their Shards via their userPKHDID
+# Shards used to query Rituals via the StreamID
+type DemoShard
+  @createModel(
+    accountRelation: LIST
+    description: "A Shard tied to only one user and one ritual."
+  ) {
+  ritualID: StreamID! @documentReference(model: "DemoRitual")
+  ritual: DemoRitual! @relationDocument(property: "ritualID")
+  shardValue: String! @string(minLength: 1, maxLength: 5000)
+  # userPKHDID: DID! @documentAccount
+}
