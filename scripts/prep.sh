@@ -1,0 +1,1 @@
+composedb composite:create schemas/Ritual.graphql --output composites/ritual.json --did-private-key $(cat priv.key)
