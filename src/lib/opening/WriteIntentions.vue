@@ -53,7 +53,7 @@ const props = defineProps(["participantLabel"]);
     <input type="text" />
     <button @click="pushIntentions">ᐅ</button>
   </div>
-  <WalletLogin v-if="gotEssence" />
+  <WalletLogin v-if="gotEssence" :shardIndex="props.participantLabel - 1" />
 </template>
 
 <style scoped>

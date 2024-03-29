@@ -18,6 +18,8 @@ onMounted(() => {
   signButton = document.querySelector(".sign-button");
 });
 
+const props = defineProps(["shardIndex"]);
+
 // * * * * * * * * * * * * * * * * * *
 // WAGMI CONFIG / MODAL INSTANTIATION
 // * * * * * * * * * * * * * * * * * *
@@ -99,6 +101,16 @@ async function executeSignature() {
     const seed = hash(u8a.fromString(signature.slice(2), "base16"));
     const did = await authenticateDID(seed);
     console.log(did.id);
+
+    // test encryption ✅
+    const jwe = await did.createDagJWE(store.shards[props.shardIndex], [
+      did.id,
+    ]);
+    const encryptedShard = JSON.stringify(jwe);
+
+    // test decryption ✅
+    const decryptedShard = await did.decryptDagJWE(JSON.parse(encryptedShard));
+    console.log("decrypted:", decryptedShard);
 
     await disconnectAccount();
     store.processWallet();
