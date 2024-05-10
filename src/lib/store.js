@@ -1,9 +1,13 @@
 import { reactive } from "vue";
 import * as Bip39 from "bip39";
-import { DID } from "dids";
-import { Ed25519Provider } from "key-did-provider-ed25519";
-import KeyResolver from "key-did-resolver";
 import * as seedsplit from "../js/seedsplit";
+import { CeramicClient } from "@ceramicnetwork/http-client";
+import { ComposeClient } from "@composedb/client";
+import { definition } from "../../definition";
+
+export const ceramic = new CeramicClient("http://localhost:7007");
+export const compose = new ComposeClient({ ceramic, definition });
+// console.log(compose.resources);
 
 export const store = reactive({
   // ceremony details

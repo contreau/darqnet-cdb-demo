@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from "vue";
 import { onMounted } from "vue";
-import { store } from "../store";
+import { store, ceramic, compose } from "../store";
 import { createWeb3Modal, defaultWagmiConfig } from "@web3modal/wagmi/vue";
 import { watchAccount, signMessage, disconnect } from "@wagmi/core";
 import { mainnet, arbitrum } from "viem/chains";
@@ -10,6 +10,9 @@ import { Ed25519Provider } from "key-did-provider-ed25519";
 import { getResolver } from "key-did-resolver";
 import * as u8a from "uint8arrays";
 import { hash } from "@stablelib/sha256";
+import { getWalletClient } from "@wagmi/core";
+import { EthereumWebAuth, getAccountId } from "@didtools/pkh-ethereum";
+import { DIDSession } from "did-session";
 
 const projectId = "c6c57240c4eee81a0f1fc1b23c905bea";
 let signButton;
@@ -58,9 +61,24 @@ modal.subscribeEvents((event) => {
 // watches web3 modal for changes
 let showAddress = ref(false);
 let address = ref("");
-watchAccount((account) => {
+watchAccount(async (account) => {
   // console.log("account changes:", account);
   if (account.isConnected) {
+    const walletClient = await getWalletClient(wagmiConfig);
+    const accountId = await getAccountId(
+      walletClient,
+      walletClient.account.address
+    );
+    const authMethod = await EthereumWebAuth.getAuthMethod(
+      walletClient,
+      accountId
+    );
+    // change to use specific resource
+    const session = await DIDSession.get(accountId, authMethod, {
+      resources: compose.resources,
+    });
+    ceramic.did = session.did;
+    console.log("Auth'd:", session.did.parent);
     currentlySignedIn = true;
     getWalletInfo(account.address);
     address.value = account.address;
