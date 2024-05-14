@@ -1,6 +1,6 @@
 type DemoRitual
   @loadModel(
-    id: "kjzl6hvfrbw6ca0umk8zz2y39gunxcai5j88vq2rna6dppmbaqhz3mou4d9eyon"
+    id: "kjzl6hvfrbw6c9h4ngosxy1lrugyy3ouctqndnefh7lmrdq9gcs60c7hvdbmq80"
   ) {
   id: ID!
 }
@@ -15,5 +15,5 @@ type DemoShard
   ritualID: StreamID! @documentReference(model: "DemoRitual")
   ritual: DemoRitual! @relationDocument(property: "ritualID")
   shardValue: String! @string(minLength: 1, maxLength: 5000)
-  # userPKHDID: DID! @documentAccount
+  userPKHDID: DID! @documentAccount
 }

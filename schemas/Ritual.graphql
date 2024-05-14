@@ -1,11 +1,9 @@
 # Rituals are queried from shards via the related ritualDID
 type DemoRitual
   @createModel(
-    accountRelation: SINGLE
+    accountRelation: LIST
     description: "Information for a given ritual."
   ) {
-  #   @createIndex(fields: [{ path: "name" }])
-  #   @createIndex(fields: [{ path: "date" }])
   name: String! @string(minLength: 1, maxLength: 50)
   date: DateTime!
   intentions: String! @string(minLength: 1, maxLength: 100000)
