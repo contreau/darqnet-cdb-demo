@@ -1,11 +1,11 @@
 export const definition = {
   models: {
     DemoRitual: {
-      id: "kjzl6hvfrbw6ca0umk8zz2y39gunxcai5j88vq2rna6dppmbaqhz3mou4d9eyon",
-      accountRelation: { type: "single" },
+      id: "kjzl6hvfrbw6c9h4ngosxy1lrugyy3ouctqndnefh7lmrdq9gcs60c7hvdbmq80",
+      accountRelation: { type: "list" },
     },
     DemoShard: {
-      id: "kjzl6hvfrbw6c5ugxdgut7jez0fkd6qu6bo8qq4rrtwgg96ywwyd3sc6dv42f61",
+      id: "kjzl6hvfrbw6c5xyuo9aj6zanou90f6xgqdfjxfjz8j6qwin160ozv61i910gh6",
       accountRelation: { type: "list" },
     },
   },
@@ -24,15 +24,16 @@ export const definition = {
         relation: {
           source: "document",
           model:
-            "kjzl6hvfrbw6ca0umk8zz2y39gunxcai5j88vq2rna6dppmbaqhz3mou4d9eyon",
+            "kjzl6hvfrbw6c9h4ngosxy1lrugyy3ouctqndnefh7lmrdq9gcs60c7hvdbmq80",
           property: "ritualID",
         },
       },
+      userPKHDID: { type: "view", viewType: "documentAccount" },
     },
   },
   enums: {},
   accountData: {
-    demoRitual: { type: "node", name: "DemoRitual" },
+    demoRitualList: { type: "connection", name: "DemoRitual" },
     demoShardList: { type: "connection", name: "DemoShard" },
   },
 };
