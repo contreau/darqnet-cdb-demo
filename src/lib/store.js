@@ -7,16 +7,19 @@ import { definition } from "../../definition";
 
 export const ceramic = new CeramicClient("http://localhost:7007");
 export const compose = new ComposeClient({ ceramic, definition });
-// console.log(compose.resources);
+console.log(compose.resources);
 
 export const store = reactive({
   // ceremony details
+  streamID: "",
   ceremonyType: "",
   ceremonyChosen: false,
   ritualName: "?",
   ritualDate: "?",
   acquiredNameDate: false,
-  createOpeningCeremony() {
+  concludedOpeningCeremony: false,
+
+  async createOpeningCeremony() {
     this.ceremonyChosen = true;
     console.log("Opening Ceremony chosen.");
     this.ceremonyType = "open";
@@ -29,6 +32,7 @@ export const store = reactive({
     this.acquiredNameDate = true;
     console.log("Ritual | Name:", this.ritualName, "| Date:", this.ritualDate);
   },
+
   createClosingCeremony() {
     this.ceremonyChosen = true;
     console.log("Closing Ceremony chosen.");
@@ -67,7 +71,7 @@ export const store = reactive({
     console.log(this.intentions);
   },
 
-  processWallet() {
+  async processWallet() {
     if (this.participantLabel < this.participants) {
       this.participantLabel++;
       this.rerender = !this.rerender; // trigger rerender of component
@@ -75,5 +79,9 @@ export const store = reactive({
       this.acquiredIntentions = true;
       console.log(this.intentions);
     }
+  },
+
+  concludeOpeningCeremony() {
+    this.concludedOpeningCeremony = true;
   },
 });

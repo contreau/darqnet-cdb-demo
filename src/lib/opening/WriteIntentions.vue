@@ -40,7 +40,10 @@ const props = defineProps(["participantLabel"]);
 </script>
 
 <template>
-  <h3>Participant {{ props.participantLabel }}</h3>
+  <h3>
+    Participant {{ props.participantLabel }}
+    <span v-if="props.participantLabel === 1">(Ritual Leader)</span>
+  </h3>
   <div class="wrapper" v-if="!gotEssence">
     <p>
       <span v-if="!gotDreams">What are your dreams for the new year?</span>

@@ -21,7 +21,7 @@ onMounted(() => {
   signButton = document.querySelector(".sign-button");
 });
 
-const props = defineProps(["shardIndex"]);
+// TODO: figure out why scanning QR code doesn't work when doing a test with both wallets
 
 // * * * * * * * * * * * * * * * * * *
 // WAGMI CONFIG / MODAL INSTANTIATION
@@ -100,93 +100,12 @@ async function showQRCode() {
     setTimeout(() => {
       shadowRoot = modalParent.shadowRoot;
       resolve(null);
-    }, 0);
+    }, 10);
   });
   const wuiRouter = shadowRoot.childNodes[2].childNodes[1].childNodes[3];
   const wrapper = wuiRouter.shadowRoot.childNodes[1].childNodes[1].shadowRoot;
   const walletConnectButton = wrapper.childNodes[2].childNodes[5];
   walletConnectButton.click();
-}
-
-async function executeSignature() {
-  // change text in button
-  signButton.innerText = "Check your mobile wallet";
-  try {
-    const signature = await signMessage({
-      message: "I bless this offering",
-      method: "personal_sign",
-    });
-    const seed = hash(u8a.fromString(signature.slice(2), "base16"));
-    const did = await authenticateDID(seed);
-    console.log(did.id);
-
-    if (props.shardIndex === 0) {
-      // if first user, create the ritual
-      const ritual = await compose.executeQuery(
-        `mutation {
-        createDemoRitual(
-          input: {
-            content: {
-              name: "${store.ritualName}"
-              date: "${store.ritualDate}"
-              intentions: "{}"
-            }
-          }
-        ) {
-          document {
-            id
-            name
-            date
-            intentions
-          }
-        }
-      }
-      `
-      );
-      console.log(ritual);
-      store.streamID = ritual.data.createDemoRitual.document.id;
-      console.log(store.streamID);
-    }
-
-    // shard encryption
-    const jwe = await did.createDagJWE(store.shards[props.shardIndex], [
-      did.id,
-    ]);
-    const encryptedShard = JSON.stringify(jwe).replace(/"/g, "`");
-
-    const shardOnDB = await compose.executeQuery(`
-      mutation {
-        createDemoShard(
-          input: {
-             content: {
-               ritualID: "${store.streamID}"
-               shardValue: "${encryptedShard}"
-              }
-            }
-        ) {
-          document {
-            id
-            shardValue
-          }
-        }
-      }
-    `);
-
-    console.log(shardOnDB);
-
-    // test decryption ✅
-    // const decryptedShard = await did.decryptDagJWE(JSON.parse(encryptedShard));
-    // console.log("decrypted:", decryptedShard);
-
-    await disconnectAccount();
-    store.processWallet();
-  } catch (err) {
-    console.error(err);
-    signButton.innerText = "Signature rejected.";
-    setTimeout(() => {
-      signButton.innerText = "I bless this offering";
-    }, 2000);
-  }
 }
 
 // Retrieves wallet address and reveals signature button
@@ -213,27 +132,95 @@ async function authenticateDID(seed) {
 async function disconnectAccount() {
   await disconnect();
 }
+
+async function executeSignature() {
+  // change text in button
+  signButton.innerText = "Check your mobile wallet";
+  try {
+    const signature = await signMessage({
+      message: "I bless this offering",
+      method: "personal_sign",
+    });
+    const seed = hash(u8a.fromString(signature.slice(2), "base16"));
+    const did = await authenticateDID(seed);
+
+    const cp = "what will you conjure by the summer solstice?";
+    const ep = "feel into the moment and capture its essence.";
+    const dp = "what is your biggest dream for the new year?";
+    const c = store.intentions.conjurations;
+    const e = store.intentions.essence;
+    const d = store.intentions.dreams;
+
+    const jwe = await did.createDagJWE(
+      {
+        cp,
+        ep,
+        dp,
+        c,
+        e,
+        d,
+      },
+      [did.id]
+    );
+    const encryptedIntentions = JSON.stringify(jwe).replace(/"/g, "`");
+    const updatedRitual = await compose.executeQuery(`
+      mutation {
+        updateDemoRitual(
+          input: {
+            id: "${store.streamID}"
+            content: {
+              name: "${store.ritualName}"
+              date: "${store.ritualDate}"
+              intentions: "${encryptedIntentions}"
+            }
+          }
+        ) {
+          document {
+            id
+            name
+            date
+            intentions
+          }
+        }
+      }
+    `);
+
+    console.log(updatedRitual);
+    await disconnectAccount();
+    store.concludeOpeningCeremony();
+  } catch (err) {
+    console.error(err);
+    signButton.innerText = "Signature rejected.";
+    setTimeout(() => {
+      signButton.innerText = "I bless this offering";
+    }, 2000);
+  }
+}
 </script>
 
 <template>
-  <div class="wrapper">
+  <h3 v-if="!showAddress">Ritual Leader</h3>
+  <div class="wrapper" v-if="!store.concludedOpeningCeremony">
     <div class="modal-container">
       <w3m-button v-if="!showAddress" size="md" balance="hide" />
     </div>
-    <p v-if="showAddress">Welcome, {{ address }}.</p>
-  </div>
-  <div class="sign-container">
+    <p v-if="showAddress">Welcome, Ritual Leader<br />{{ address }}.</p>
     <button
       class="sign-button"
       :class="{ visible: isVisible }"
       @click="executeSignature(account)"
     >
-      I bless this offering
+      Encrypt All Intentions
     </button>
   </div>
+  <h3 v-else>Ritual Complete.</h3>
 </template>
 
 <style scoped>
+h3 {
+  text-align: center;
+  margin-bottom: 3rem;
+}
 .wrapper {
   text-align: center;
 }

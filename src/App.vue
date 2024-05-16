@@ -6,6 +6,7 @@ import ChooseCeremony from "./lib/opening/ChooseCeremony.vue";
 import NameDate from "./lib/opening/NameDate.vue";
 import GetPT from "./lib/opening/GetPT.vue";
 import WriteIntentions from "./lib/opening/WriteIntentions.vue";
+import PushToComposeDB from "./lib/opening/PushToComposeDB.vue";
 </script>
 
 <template>
@@ -19,6 +20,7 @@ import WriteIntentions from "./lib/opening/WriteIntentions.vue";
     :key="store.rerender"
     v-if="store.acquiredPT && !store.acquiredIntentions"
   />
+  <PushToComposeDB v-if="store.acquiredIntentions" />
 </template>
 
 <style>
