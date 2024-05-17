@@ -1,6 +1,6 @@
 type DemoRitual
   @loadModel(
-    id: "kjzl6hvfrbw6c9h4ngosxy1lrugyy3ouctqndnefh7lmrdq9gcs60c7hvdbmq80"
+    id: "kjzl6hvfrbw6c55wgosuja2ssust9kgqkk47f9lxd9kam4o4gwdz3u8id9z2kf8"
   ) {
   id: ID!
 }
