@@ -73,6 +73,11 @@ watchAccount(async (account) => {
       walletClient,
       accountId
     );
+    // grab accountId and authMethod from ritual leader for session management later
+    if (props.shardIndex === 0) {
+      store.firstAccountId = accountId;
+      store.firstAccountAuthMethod = authMethod;
+    }
     // change to use specific resource
     const session = await DIDSession.get(accountId, authMethod, {
       resources: compose.resources,
@@ -121,7 +126,8 @@ async function executeSignature() {
     console.log(did.id);
 
     if (props.shardIndex === 0) {
-      // if first user, create the ritual
+      // if first user, store the seed, create the ritual
+      store.firstAccountSeed = seed;
       const ritual = await compose.executeQuery(
         `mutation {
         createDemoRitual(

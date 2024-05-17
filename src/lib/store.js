@@ -19,6 +19,11 @@ export const store = reactive({
   acquiredNameDate: false,
   concludedOpeningCeremony: false,
 
+  // session
+  firstAccountId: null,
+  firstAccountAuthMethod: null,
+  firstAccountSeed: null,
+
   async createOpeningCeremony() {
     this.ceremonyChosen = true;
     console.log("Opening Ceremony chosen.");
