@@ -135,6 +135,9 @@ async function executeSignature() {
             content: {
               name: "${store.ritualName}"
               date: "${store.ritualDate}"
+              participants: ${store.participants}
+              shardbearers: ${store.shardBearers}
+              threshold: ${store.threshold}
               intentions: "{}"
             }
           }

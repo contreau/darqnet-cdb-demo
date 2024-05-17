@@ -6,6 +6,7 @@ import { onMounted } from "vue";
 let input;
 let gotParticipants = ref(false);
 let gotThreshold = ref(false);
+let gotShardBearers = ref(false);
 
 onMounted(() => {
   input = document.querySelector("input");
@@ -20,7 +21,14 @@ function processPT() {
       input.value = "";
       input.focus();
     }
-  } else if (gotParticipants.value && !gotThreshold.value) {
+  } else if (gotParticipants.value && !gotShardBearers.value) {
+    if (!isNaN(parseInt(input.value))) {
+      store.shardBearers = parseInt(input.value);
+      gotShardBearers.value = true;
+      input.value = "";
+      input.focus();
+    }
+  } else if (gotShardBearers.value && !gotThreshold.value) {
     if (
       !isNaN(parseInt(input.value)) &&
       parseInt(input.value) <= store.participants
@@ -35,8 +43,11 @@ function processPT() {
 
 <template>
   <div class="wrapper">
-    <p v-if="!gotParticipants">How many have gathered?</p>
-    <p v-else>What is your threshold?</p>
+    <p v-if="!gotParticipants">how many have gathered?</p>
+    <p v-if="gotParticipants && !gotShardBearers">
+      how many shards will you create?
+    </p>
+    <p v-if="gotShardBearers && !gotThreshold">what shall be your threshold?</p>
     <input type="number" />
     <button @click="processPT">ᐅ</button>
   </div>

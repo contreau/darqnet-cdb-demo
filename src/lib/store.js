@@ -44,16 +44,26 @@ export const store = reactive({
     this.ceremonyType = "close";
   },
 
-  // participant and threshold
+  // participants, shardbearers, threshold
   participants: 0,
   participantLabel: 1,
+  shardBearers: 0,
+  shardBearerLabel: 1,
   threshold: 0,
   acquiredPT: false,
   shards: null,
   async splitMainSecret() {
     this.shards = await seedsplit.split(
       this.mainSecret,
+      this.shardBearers,
+      this.threshold
+    );
+    console.log(
+      "participants:",
       this.participants,
+      "shardBearers:",
+      this.shardBearers,
+      "threshold:",
       this.threshold
     );
     console.log("shards:", this.shards);

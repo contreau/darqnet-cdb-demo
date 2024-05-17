@@ -21,6 +21,9 @@ import { store } from "./store";
       Participants: <span class="p-count">{{ store.participants }}</span>
     </p>
     <p>
+      Shardbearers: <span class="sh-count">{{ store.shardBearers }}</span>
+    </p>
+    <p>
       Threshold: <span class="t-count">{{ store.threshold }}</span>
     </p>
   </div>

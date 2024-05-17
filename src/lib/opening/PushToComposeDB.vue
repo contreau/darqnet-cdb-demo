@@ -7,8 +7,8 @@ import { getResolver } from "key-did-resolver";
 import { DIDSession } from "did-session";
 
 // TODO:
-// store participant and threshold values in the Ritual model
 // Like the current app, designate keyholders at random, and configure the jwe encryption to hold their signature DIDs so any of then can decrypt
+// participants => shardbearers can decrypt => threshold determines how many shards needed to reconstruct
 // should probably store their key DIDs generated from their signatures in their Shard models so it can be retrieved
 // this way, any of the keyholders can decrypt in the closing ceremony depending on threshold
 // make sure that a keyholder is the one mutating the Ritual in the WalletLogin.vue component (rename firstAccountId/seed etc. to firstKeyHolderId/seed etc.?)
@@ -72,6 +72,9 @@ async function executeSignature() {
             content: {
               name: "${store.ritualName}"
               date: "${store.ritualDate}"
+              participants: ${store.participants}
+              shardbearers: ${store.shardBearers}
+              threshold: ${store.threshold}
               intentions: "${encryptedIntentions}"
             }
           }
