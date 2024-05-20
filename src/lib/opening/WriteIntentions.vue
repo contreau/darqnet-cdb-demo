@@ -33,17 +33,17 @@ async function pushIntentions() {
     input.value = "";
     gotEssence.value = true;
     store.saveIntentions(dreams, conjurations, essence);
+    if (!store.chosenShardbearers.includes(props.shardIndex)) {
+      store.processUser(false);
+    }
   }
 }
 
-const props = defineProps(["participantLabel"]);
+const props = defineProps(["participantLabel", "shardIndex"]);
 </script>
 
 <template>
-  <h3>
-    Participant {{ props.participantLabel }}
-    <span v-if="props.participantLabel === 1">(Ritual Leader)</span>
-  </h3>
+  <h3>Participant {{ props.participantLabel }}</h3>
   <div class="wrapper" v-if="!gotEssence">
     <p>
       <span v-if="!gotDreams">What are your dreams for the new year?</span>
@@ -56,7 +56,10 @@ const props = defineProps(["participantLabel"]);
     <input type="text" />
     <button @click="pushIntentions">ᐅ</button>
   </div>
-  <WalletLogin v-if="gotEssence" :shardIndex="props.participantLabel - 1" />
+  <WalletLogin
+    v-if="gotEssence && store.chosenShardbearers.includes(props.shardIndex)"
+    :shardIndex="props.shardIndex"
+  />
 </template>
 
 <style scoped>

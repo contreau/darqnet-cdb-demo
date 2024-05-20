@@ -49,9 +49,13 @@ export const store = reactive({
   participantLabel: 1,
   shardBearers: 0,
   shardBearerLabel: 1,
+  chosenShardbearers: null,
+  shardIndex: 0,
   threshold: 0,
   acquiredPT: false,
   shards: null,
+  signatureDIDs: [],
+
   async splitMainSecret() {
     this.shards = await seedsplit.split(
       this.mainSecret,
@@ -67,7 +71,23 @@ export const store = reactive({
       this.threshold
     );
     console.log("shards:", this.shards);
+    this.determineShardbearers();
     this.acquiredPT = true;
+  },
+
+  determineShardbearers() {
+    const chosenShardbearers = [];
+    const set = new Set();
+    while (set.size < this.shardBearers) {
+      const rando = Math.floor(Math.random() * this.participants);
+      if (!set.has(rando)) {
+        set.add(rando);
+        chosenShardbearers.push(rando);
+      }
+    }
+    chosenShardbearers.sort((a, b) => a > b);
+    this.chosenShardbearers = chosenShardbearers;
+    console.log("chosen shardbearers:", this.chosenShardbearers);
   },
 
   // intentions submission
@@ -86,9 +106,13 @@ export const store = reactive({
     console.log(this.intentions);
   },
 
-  async processWallet() {
+  async processUser(incrementShardbearerLabel) {
     if (this.participantLabel < this.participants) {
       this.participantLabel++;
+      if (incrementShardbearerLabel) {
+        this.shardBearerLabel++;
+      }
+      this.shardIndex++;
       this.rerender = !this.rerender; // trigger rerender of component
     } else if (this.participantLabel === this.participants) {
       this.acquiredIntentions = true;

@@ -19,6 +19,7 @@ let signButton;
 
 onMounted(() => {
   signButton = document.querySelector(".sign-button");
+  console.log("shard index:", props.shardIndex);
 });
 
 const props = defineProps(["shardIndex"]);
@@ -123,7 +124,8 @@ async function executeSignature() {
     });
     const seed = hash(u8a.fromString(signature.slice(2), "base16"));
     const did = await authenticateDID(seed);
-    console.log(did.id);
+    store.signatureDIDs = [...store.signatureDIDs, did.id];
+    console.log("users:", store.signatureDIDs);
 
     if (props.shardIndex === 0) {
       // if first user, store the seed, create the ritual
@@ -170,6 +172,7 @@ async function executeSignature() {
              content: {
                ritualID: "${store.streamID}"
                shardValue: "${encryptedShard}"
+               signatureDID: "${did.id}"
               }
             }
         ) {
@@ -188,7 +191,7 @@ async function executeSignature() {
     // console.log("decrypted:", decryptedShard);
 
     await disconnectAccount();
-    store.processWallet();
+    store.processUser(true);
   } catch (err) {
     console.error(err);
     signButton.innerText = "Signature rejected.";
@@ -226,6 +229,7 @@ async function disconnectAccount() {
 
 <template>
   <div class="wrapper">
+    <p>You are Shardbearer {{ store.shardBearerLabel }}</p>
     <div class="modal-container">
       <w3m-button v-if="!showAddress" size="md" balance="hide" />
     </div>

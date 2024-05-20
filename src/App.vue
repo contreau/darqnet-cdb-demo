@@ -17,6 +17,7 @@ import PushToComposeDB from "./lib/opening/PushToComposeDB.vue";
   <GetPT v-if="store.acquiredNameDate && !store.acquiredPT" />
   <WriteIntentions
     :participantLabel="store.participantLabel"
+    :shardIndex="store.shardIndex"
     :key="store.rerender"
     v-if="store.acquiredPT && !store.acquiredIntentions"
   />
