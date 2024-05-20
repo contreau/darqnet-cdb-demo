@@ -38,12 +38,6 @@ export const store = reactive({
     console.log("Ritual | Name:", this.ritualName, "| Date:", this.ritualDate);
   },
 
-  createClosingCeremony() {
-    this.ceremonyChosen = true;
-    console.log("Closing Ceremony chosen.");
-    this.ceremonyType = "close";
-  },
-
   // participants, shardbearers, threshold
   participants: 0,
   participantLabel: 1,
@@ -122,5 +116,35 @@ export const store = reactive({
 
   concludeOpeningCeremony() {
     this.concludedOpeningCeremony = true;
+  },
+
+  // CLOSING CEREMONY
+  // MARK: CC
+  gotRitualList: false,
+  collectingShards: false,
+  acquiredClosingShards: false,
+  decryptionError: false,
+  decryptionVisible: false,
+  shardNumber: 1,
+
+  createClosingCeremony() {
+    this.ceremonyChosen = true;
+    console.log("Closing Ceremony chosen.");
+    this.ceremonyType = "close";
+  },
+
+  setRitualDetails(ritual) {
+    this.ritualName = ritual.name;
+    this.ritualDate = ritual.date;
+    this.participants = ritual.participants;
+    this.threshold = ritual.threshold;
+    this.shardBearers = ritual.shardbearers;
+    this.intentions = ritual.intentions;
+  },
+
+  gatherShard(shard) {
+    this.shards = [];
+    this.shards.push(shard);
+    console.log("collected shards:", this.shards);
   },
 });

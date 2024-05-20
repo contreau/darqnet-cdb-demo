@@ -7,13 +7,21 @@ import NameDate from "./lib/opening/NameDate.vue";
 import GetPT from "./lib/opening/GetPT.vue";
 import WriteIntentions from "./lib/opening/WriteIntentions.vue";
 import PushToComposeDB from "./lib/opening/PushToComposeDB.vue";
+import GetRitual from "./lib/closing/GetRitual.vue";
 </script>
 
 <template>
   <Header />
   <ChooseCeremony v-if="!store.ceremonyChosen" />
+
   <!-- OPENING CEREMONY -->
-  <NameDate v-if="store.ceremonyChosen && !store.acquiredNameDate" />
+  <NameDate
+    v-if="
+      store.ceremonyChosen &&
+      store.ceremonyType === 'open' &&
+      !store.acquiredNameDate
+    "
+  />
   <GetPT v-if="store.acquiredNameDate && !store.acquiredPT" />
   <WriteIntentions
     :participantLabel="store.participantLabel"
@@ -22,6 +30,12 @@ import PushToComposeDB from "./lib/opening/PushToComposeDB.vue";
     v-if="store.acquiredPT && !store.acquiredIntentions"
   />
   <PushToComposeDB v-if="store.acquiredIntentions" />
+
+  <!-- CLOSING CEREMONY -->
+  <GetRitual
+    v-if="store.ceremonyType === 'close' && !store.acquiredThreshold"
+  />
+  <!-- TODO: make wallet logins a composable/hook? (in a .js file) -->
 </template>
 
 <style>
