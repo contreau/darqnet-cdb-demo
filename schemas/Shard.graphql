@@ -16,4 +16,5 @@ type DemoShard
   ritual: DemoRitual! @relationDocument(property: "ritualID")
   shardValue: String! @string(minLength: 1, maxLength: 5000)
   userPKHDID: DID! @documentAccount
+  signatureDID: DID!
 }
