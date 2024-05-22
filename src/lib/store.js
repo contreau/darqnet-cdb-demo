@@ -120,7 +120,9 @@ export const store = reactive({
 
   // CLOSING CEREMONY
   // MARK: CC
+  ritualID: null,
   gotRitualList: false,
+  ritualSelected: false,
   collectingShards: false,
   acquiredClosingShards: false,
   decryptionError: false,
@@ -134,6 +136,7 @@ export const store = reactive({
   },
 
   setRitualDetails(ritual) {
+    this.ritualID = ritual.id;
     this.ritualName = ritual.name;
     this.ritualDate = ritual.date;
     this.participants = ritual.participants;
@@ -143,8 +146,12 @@ export const store = reactive({
   },
 
   gatherShard(shard) {
-    this.shards = [];
+    if (this.shards === null) {
+      this.shards = [];
+    }
     this.shards.push(shard);
     console.log("collected shards:", this.shards);
+    this.ritualSelected = true;
+    this.shardNumber++;
   },
 });

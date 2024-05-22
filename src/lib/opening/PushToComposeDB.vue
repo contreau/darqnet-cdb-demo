@@ -6,10 +6,6 @@ import { Ed25519Provider } from "key-did-provider-ed25519";
 import { getResolver } from "key-did-resolver";
 import { DIDSession } from "did-session";
 
-// participants => shardbearers can decrypt => threshold determines how many shards needed to reconstruct
-// make sure that a keyholder is the one mutating the Ritual in the WalletLogin.vue component (rename firstAccountId/seed etc. to firstKeyHolderId/seed etc.?)
-// keep in mind that closing ceremony flow does not mutate the Ritual in any way, only queries it and then decrypts a retrieved jwe. still needs sessions though.
-
 onMounted(() => {
   checkForActiveSession();
 });

@@ -15,9 +15,7 @@ import { DIDSession } from "did-session";
 
 const projectId = "c6c57240c4eee81a0f1fc1b23c905bea";
 
-// * * * * * * * * * * * * * * * * * *
-// WAGMI CONFIG / MODAL INSTANTIATION
-// * * * * * * * * * * * * * * * * * *
+let promptSignature = ref(true);
 
 const metadata = {
   name: "Darqnet Wallet Demo",
@@ -76,8 +74,8 @@ watchAccount(async (account) => {
     getWalletInfo(account.address);
     address.value = account.address;
     showAddress.value = true;
-
-    queryCDB(session.did.parent);
+    // query ComposeDB for shard once user is logged in
+    getShard(session.did.parent);
   }
   if (account.isDisconnected) {
     currentlySignedIn = false;
@@ -122,9 +120,8 @@ async function disconnectAccount() {
   await disconnect();
 }
 
-let queryMessageVisible = ref(false);
-async function queryCDB(pkh) {
-  queryMessageVisible.value = true;
+let shards;
+async function getShard(pkh) {
   const response = await compose.executeQuery(
     `query {
   node(id: "${pkh}") {
@@ -135,11 +132,6 @@ async function queryCDB(pkh) {
             ritual {
               id
               name
-              date
-              participants
-              shardbearers
-              threshold
-              intentions
             }
             shardValue
             signatureDID {
@@ -152,72 +144,53 @@ async function queryCDB(pkh) {
   }
 }`
   );
-  queryMessageVisible.value = false;
-  store.gotRitualList = true;
-  ritualListVisible.value = true;
-  const sorted = response.data.node.demoShardList.edges.toReversed();
-  shards = ref(sorted);
-}
-
-let shards;
-let ritualListVisible = ref(false);
-let promptSignature = ref(false);
-
-async function processSelection(listItem) {
-  const shard = shards.value[listItem];
-  store.setRitualDetails(shard.node.ritual);
-  ritualListVisible.value = false;
-  promptSignature.value = true;
-
-  try {
-    const signature = await signMessage({
-      message: "I bless this offering",
-      method: "personal_sign",
-    });
-    const seed = hash(u8a.fromString(signature.slice(2), "base16"));
-    const did = await authenticateDID(seed);
-    let encryptedShard = shard.node.shardValue;
-    encryptedShard = encryptedShard.replace(/`/g, '"');
-    const decryptedShard = await did.decryptDagJWE(JSON.parse(encryptedShard));
-    console.log(decryptedShard);
-    await disconnectAccount();
-    store.gatherShard(decryptedShard);
-    promptSignature.value = false;
-  } catch (err) {
-    console.error(err);
+  const shards = response.data.node.demoShardList.edges.toReversed();
+  let encryptedShard;
+  console.log(shards);
+  for (let shard of shards) {
+    if (shard.node.ritual.id === store.ritualID) {
+      encryptedShard = shard.node.shardValue;
+      break;
+    }
   }
+  console.log(encryptedShard);
 }
+
+// async function processSelection(listItem) {
+//   const shard = shards.value[listItem];
+//   store.setRitualDetails(shard.node.ritual);
+//   ritualListVisible.value = false;
+//   promptSignature.value = true;
+
+//   try {
+//     const signature = await signMessage({
+//       message: "I bless this offering",
+//       method: "personal_sign",
+//     });
+//     const seed = hash(u8a.fromString(signature.slice(2), "base16"));
+//     const did = await authenticateDID(seed);
+//     let encryptedShard = shard.node.shardValue;
+//     encryptedShard = encryptedShard.replace(/`/g, '"');
+//     const decryptedShard = await did.decryptDagJWE(JSON.parse(encryptedShard));
+//     console.log(decryptedShard);
+//     await disconnectAccount();
+//     store.gatherShard(decryptedShard);
+//     promptSignature.value = false;
+//   } catch (err) {
+//     console.error(err);
+//   }
+// }
 </script>
 
 <template>
   <div class="wrapper">
-    <p v-if="!store.gotRitualList">Choose a Shardbearer to select a ritual.</p>
-    <w3m-button size="md" balance="hide" />
-    <p v-if="queryMessageVisible">Retrieving Rituals...</p>
-    <div v-if="ritualListVisible" class="ritual-list-container">
-      <p>Your Rituals</p>
-      <ul class="ritual-list">
-        <li v-for="(shard, index) of shards" @click="processSelection(index)">
-          <span class="ritual-name"
-            ><u>{{ shard.node.ritual.name }}</u></span
-          >
-          <br />{{ shard.node.ritual.date }} <br />Participants:
-          {{ shard.node.ritual.participants }} <br />
-          Shardbearers: {{ shard.node.ritual.shardbearers }} <br />
-          Threshold:
-          {{ shard.node.ritual.threshold }}
-        </li>
-      </ul>
-    </div>
-
     <div v-if="promptSignature" class="prompt-message">
       <p>Shardbearer {{ store.shardNumber }}</p>
       <p>Use your wallet to retrieve your shard.</p>
+      <w3m-button size="md" balance="hide" />
     </div>
   </div>
 </template>
-
-<!-- TODO: handle canceling of signature to reset the login button / go back to previous step - this would handle someone deciding to no longer be a shardbearer even after it prompted them to sign -->
 
 <style scoped>
 div.wrapper {
@@ -231,38 +204,6 @@ div.wrapper {
   p {
     font-size: 1.5rem;
     margin-bottom: 0;
-  }
-}
-
-ul.ritual-list {
-  border: solid 2px #ffffff;
-  text-align: left;
-  padding-left: 0;
-  list-style-type: none;
-  min-width: 650px;
-  max-height: 400px;
-  overflow-y: scroll;
-  border-radius: 10px;
-
-  li {
-    padding: 1em 0;
-    padding-left: 1em;
-    background-color: var(--purple);
-    width: 100%;
-    transition: background-color 0.3s;
-    cursor: pointer;
-    &:hover {
-      background-color: #053c94;
-    }
-  }
-
-  .ritual-name {
-    font-weight: 600;
-    font-size: 1.5rem;
-  }
-
-  li + li {
-    margin-top: 1.4rem;
   }
 }
 </style>

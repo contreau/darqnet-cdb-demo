@@ -186,10 +186,6 @@ async function executeSignature() {
 
     console.log(shardOnDB);
 
-    // test decryption ✅
-    // const decryptedShard = await did.decryptDagJWE(JSON.parse(encryptedShard));
-    // console.log("decrypted:", decryptedShard);
-
     await disconnectAccount();
     store.processUser(true);
   } catch (err) {

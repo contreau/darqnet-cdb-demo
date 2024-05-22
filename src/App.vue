@@ -8,6 +8,7 @@ import GetPT from "./lib/opening/GetPT.vue";
 import WriteIntentions from "./lib/opening/WriteIntentions.vue";
 import PushToComposeDB from "./lib/opening/PushToComposeDB.vue";
 import GetRitual from "./lib/closing/GetRitual.vue";
+import GetShards from "./lib/closing/GetShards.vue";
 </script>
 
 <template>
@@ -32,10 +33,8 @@ import GetRitual from "./lib/closing/GetRitual.vue";
   <PushToComposeDB v-if="store.acquiredIntentions" />
 
   <!-- CLOSING CEREMONY -->
-  <GetRitual
-    v-if="store.ceremonyType === 'close' && !store.acquiredThreshold"
-  />
-  <!-- TODO: make wallet logins a composable/hook? (in a .js file) -->
+  <GetRitual v-if="store.ceremonyType === 'close' && !store.ritualSelected" />
+  <GetShards v-if="store.ritualSelected" />
 </template>
 
 <style>
