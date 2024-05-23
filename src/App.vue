@@ -9,6 +9,7 @@ import WriteIntentions from "./lib/opening/WriteIntentions.vue";
 import PushToComposeDB from "./lib/opening/PushToComposeDB.vue";
 import GetRitual from "./lib/closing/GetRitual.vue";
 import GetShards from "./lib/closing/GetShards.vue";
+import RevealIntentions from "./lib/closing/RevealIntentions.vue";
 </script>
 
 <template>
@@ -34,7 +35,11 @@ import GetShards from "./lib/closing/GetShards.vue";
 
   <!-- CLOSING CEREMONY -->
   <GetRitual v-if="store.ceremonyType === 'close' && !store.ritualSelected" />
-  <GetShards v-if="store.ritualSelected" />
+  <GetShards
+    v-if="store.ritualSelected && !store.acquiredClosingShards"
+    :key="store.rerender"
+  />
+  <RevealIntentions v-if="store.acquiredClosingShards" />
 </template>
 
 <style>

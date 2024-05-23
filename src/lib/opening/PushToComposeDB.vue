@@ -1,9 +1,6 @@
 <script setup>
 import { onMounted, ref } from "vue";
 import { store, ceramic, compose } from "../store";
-import { DID } from "dids";
-import { Ed25519Provider } from "key-did-provider-ed25519";
-import { getResolver } from "key-did-resolver";
 import { DIDSession } from "did-session";
 
 onMounted(() => {
@@ -33,10 +30,6 @@ async function checkForActiveSession() {
 
 async function executeSignature() {
   try {
-    const provider = new Ed25519Provider(store.firstAccountSeed);
-    const did = new DID({ provider, resolver: getResolver() });
-    await did.authenticate();
-
     const cp = "what will you conjure by the summer solstice?";
     const ep = "feel into the moment and capture its essence.";
     const dp = "what is your biggest dream for the new year?";
@@ -44,7 +37,7 @@ async function executeSignature() {
     const e = store.intentions.essence;
     const d = store.intentions.dreams;
 
-    const jwe = await did.createDagJWE(
+    const jwe = await store.ritualKey.createDagJWE(
       {
         cp,
         ep,
@@ -53,7 +46,7 @@ async function executeSignature() {
         e,
         d,
       },
-      store.signatureDIDs
+      [store.ritualKey.id]
     );
     const encryptedIntentions = JSON.stringify(jwe).replace(/"/g, "`");
     const updatedRitual = await compose.executeQuery(`

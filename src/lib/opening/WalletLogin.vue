@@ -128,8 +128,7 @@ async function executeSignature() {
     console.log("users:", store.signatureDIDs);
 
     if (props.shardIndex === 0) {
-      // if first user, store the seed, create the ritual
-      store.firstAccountSeed = seed;
+      // if first user, create the ritual
       const ritual = await compose.executeQuery(
         `mutation {
         createDemoRitual(

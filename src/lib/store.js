@@ -1,6 +1,9 @@
 import { reactive } from "vue";
 import * as Bip39 from "bip39";
 import * as seedsplit from "../js/seedsplit";
+import { DID } from "dids";
+import { Ed25519Provider } from "key-did-provider-ed25519";
+import { getResolver } from "key-did-resolver";
 import { CeramicClient } from "@ceramicnetwork/http-client";
 import { ComposeClient } from "@composedb/client";
 import { definition } from "../../definition";
@@ -18,11 +21,11 @@ export const store = reactive({
   ritualDate: "?",
   acquiredNameDate: false,
   concludedOpeningCeremony: false,
+  ritualKey: null,
 
   // session
   firstAccountId: null,
   firstAccountAuthMethod: null,
-  firstAccountSeed: null,
 
   async createOpeningCeremony() {
     this.ceremonyChosen = true;
@@ -30,6 +33,13 @@ export const store = reactive({
     this.ceremonyType = "open";
     this.ceremonyChosen = true;
     this.mainSecret = Bip39.generateMnemonic();
+    const seed = new Uint8Array(
+      Bip39.mnemonicToSeedSync(this.mainSecret).slice(0, 32)
+    );
+    const provider = new Ed25519Provider(seed);
+    this.ritualKey = new DID({ provider, resolver: getResolver() });
+    await this.ritualKey.authenticate();
+    console.log(this.ritualKey.id);
   },
   setNameDate(name, date) {
     this.ritualName = name;
@@ -148,10 +158,17 @@ export const store = reactive({
   gatherShard(shard) {
     if (this.shards === null) {
       this.shards = [];
+      this.ritualSelected = true;
     }
-    this.shards.push(shard);
-    console.log("collected shards:", this.shards);
-    this.ritualSelected = true;
-    this.shardNumber++;
+    if (this.shardNumber < this.threshold) {
+      this.shards.push(shard);
+      console.log("collected shards:", this.shards);
+      this.shardNumber++;
+      this.rerender = !this.rerender;
+    } else if (this.shardNumber === this.threshold) {
+      this.shards.push(shard);
+      console.log("collected shards:", this.shards);
+      this.acquiredClosingShards = true;
+    }
   },
 });

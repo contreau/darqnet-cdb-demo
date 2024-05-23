@@ -120,6 +120,7 @@ async function disconnectAccount() {
   await disconnect();
 }
 
+let awaitingSignature = ref(false);
 let shards;
 async function getShard(pkh) {
   const response = await compose.executeQuery(
@@ -153,40 +154,37 @@ async function getShard(pkh) {
       break;
     }
   }
-  console.log(encryptedShard);
+
+  awaitingSignature.value = true;
+  try {
+    const signature = await signMessage({
+      message: "I bless this offering",
+      method: "personal_sign",
+    });
+    const seed = hash(u8a.fromString(signature.slice(2), "base16"));
+    const did = await authenticateDID(seed);
+    encryptedShard = encryptedShard.replace(/`/g, '"');
+    console.log(encryptedShard);
+    const decryptedShard = await did.decryptDagJWE(JSON.parse(encryptedShard));
+    console.log(decryptedShard);
+    await disconnectAccount();
+    store.gatherShard(decryptedShard);
+    awaitingSignature.value = false;
+  } catch (err) {
+    console.error(err);
+  }
 }
 
-// async function processSelection(listItem) {
-//   const shard = shards.value[listItem];
-//   store.setRitualDetails(shard.node.ritual);
-//   ritualListVisible.value = false;
-//   promptSignature.value = true;
-
-//   try {
-//     const signature = await signMessage({
-//       message: "I bless this offering",
-//       method: "personal_sign",
-//     });
-//     const seed = hash(u8a.fromString(signature.slice(2), "base16"));
-//     const did = await authenticateDID(seed);
-//     let encryptedShard = shard.node.shardValue;
-//     encryptedShard = encryptedShard.replace(/`/g, '"');
-//     const decryptedShard = await did.decryptDagJWE(JSON.parse(encryptedShard));
-//     console.log(decryptedShard);
-//     await disconnectAccount();
-//     store.gatherShard(decryptedShard);
-//     promptSignature.value = false;
-//   } catch (err) {
-//     console.error(err);
-//   }
-// }
+// TODO: Figure out why Coinbase Wallet's signature isn't successfully decrypting the shard
+// figure out why w3m-button appears 'signed out' after shardberer 2+ joins
 </script>
 
 <template>
   <div class="wrapper">
     <div v-if="promptSignature" class="prompt-message">
       <p>Shardbearer {{ store.shardNumber }}</p>
-      <p>Use your wallet to retrieve your shard.</p>
+      <p v-if="!awaitingSignature">Use your wallet to retrieve your shard.</p>
+      <p v-if="awaitingSignature">Awaiting signature...</p>
       <w3m-button size="md" balance="hide" />
     </div>
   </div>
@@ -203,7 +201,7 @@ div.wrapper {
 
   p {
     font-size: 1.5rem;
-    margin-bottom: 0;
+    margin-bottom: 2rem;
   }
 }
 </style>
