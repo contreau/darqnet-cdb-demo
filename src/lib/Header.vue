@@ -10,7 +10,7 @@ import { store } from "./store";
       width="50"
       height="50"
     />
-    <h1>Darqnet + WalletConnect Demo</h1>
+    <h1>Darqnet x ComposeDB -- Demo</h1>
   </header>
   <div class="PT-tracker">
     <p>

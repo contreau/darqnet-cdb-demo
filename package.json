@@ -1,5 +1,5 @@
 {
-  "name": "dnet-w3m-demo",
+  "name": "darqnet-cdb-demo",
   "version": "1.0.0",
   "description": "",
   "type": "module",
@@ -13,7 +13,7 @@
   },
   "scripts": {
     "dev": "parcel",
-    "build": "rm -rf dist && parcel build --public-url /dnet-w3m-demo/",
+    "build": "rm -rf dist && parcel build --public-url /darqnet-cdb-demo/",
     "deploy": "gh-pages -d dist",
     "daemon": "sh scripts/launchDaemon.sh",
     "prep": "sh scripts/prep.sh",
