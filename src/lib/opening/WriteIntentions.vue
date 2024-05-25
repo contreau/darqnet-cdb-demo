@@ -33,7 +33,7 @@ async function pushIntentions() {
     input.value = "";
     gotEssence.value = true;
     store.saveIntentions(dreams, conjurations, essence);
-    if (!store.chosenShardbearers.includes(props.shardIndex)) {
+    if (!store.chosenShardbearers.includes(props.participantLabel - 1)) {
       store.processUser(false);
     }
   }
@@ -57,7 +57,10 @@ const props = defineProps(["participantLabel", "shardIndex"]);
     <button @click="pushIntentions">ᐅ</button>
   </div>
   <WalletLogin
-    v-if="gotEssence && store.chosenShardbearers.includes(props.shardIndex)"
+    v-if="
+      gotEssence &&
+      store.chosenShardbearers.includes(props.participantLabel - 1)
+    "
     :shardIndex="props.shardIndex"
   />
 </template>
@@ -65,7 +68,6 @@ const props = defineProps(["participantLabel", "shardIndex"]);
 <style scoped>
 h3 {
   text-align: center;
-  margin-bottom: 3rem;
 }
 .wrapper {
   text-align: center;

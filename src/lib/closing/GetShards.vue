@@ -1,127 +1,21 @@
 <script setup>
 import { ref } from "vue";
-import { store, ceramic, compose } from "../store";
-import { createWeb3Modal, defaultWagmiConfig } from "@web3modal/wagmi/vue";
-import { watchAccount, signMessage, disconnect } from "@wagmi/core";
-import { mainnet, arbitrum } from "viem/chains";
+import { store, compose } from "../store";
+import { signMessage, disconnect } from "@wagmi/core";
 import { DID } from "dids";
 import { Ed25519Provider } from "key-did-provider-ed25519";
 import { getResolver } from "key-did-resolver";
 import * as u8a from "uint8arrays";
 import { hash } from "@stablelib/sha256";
-import { getWalletClient } from "@wagmi/core";
-import { EthereumWebAuth, getAccountId } from "@didtools/pkh-ethereum";
-import { DIDSession } from "did-session";
+import { useW3M } from "../../js/useW3M";
 
-const projectId = "c6c57240c4eee81a0f1fc1b23c905bea";
-
-let promptSignature = ref(true);
-
-const metadata = {
-  name: "Darqnet Wallet Demo",
-  description: "Darqnet Wallet Demo",
-  url: "https://web3modal.com", // don't change this or qr doesn't work
-  icons: [""],
-};
-
-const chains = [mainnet, arbitrum];
-const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata });
-
-const modal = createWeb3Modal({
-  wagmiConfig,
-  projectId,
-  chains,
-  themeVariables: {
-    "--w3m-font-family": "system-ui",
-    "--w3m-font-size-master": "12px",
-    "--w3m-accent": "#1942F9",
-  },
-});
-
-// Modal event subscription
-let currentlySignedIn = false; // toggled boolean to ensure that showQRCode() is only run upon signing in
-
-modal.subscribeEvents((event) => {
-  if (event.data.event === "MODAL_OPEN" && !currentlySignedIn) {
-    showQRCode();
-  }
-  // console.log(event);
-});
-
-// watches web3 modal for changes
-let showAddress = ref(false);
+// component state
 let address = ref("");
-watchAccount(async (account) => {
-  // console.log("account changes:", account);
-  if (account.isConnected) {
-    const walletClient = await getWalletClient(wagmiConfig);
-    const accountId = await getAccountId(
-      walletClient,
-      walletClient.account.address
-    );
-    const authMethod = await EthereumWebAuth.getAuthMethod(
-      walletClient,
-      accountId
-    );
-
-    // change to use specific resource
-    const session = await DIDSession.get(accountId, authMethod, {
-      resources: compose.resources,
-    });
-    ceramic.did = session.did;
-    console.log("Auth'd:", session.did.parent);
-    currentlySignedIn = true;
-    getWalletInfo(account.address);
-    address.value = account.address;
-    showAddress.value = true;
-    // query ComposeDB for shard once user is logged in
-    getShard(session.did.parent);
-  }
-  if (account.isDisconnected) {
-    currentlySignedIn = false;
-  }
-});
-
-// Retrieves wallet address and reveals signature button
-let account = ref("");
-async function getWalletInfo(accountAddress) {
-  account.value = await new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(accountAddress);
-    }, 10);
-  });
-}
-
-async function showQRCode() {
-  const modalParent = document.querySelector("w3m-modal");
-  let shadowRoot;
-  await new Promise((resolve) => {
-    setTimeout(() => {
-      shadowRoot = modalParent.shadowRoot;
-      resolve(null);
-    }, 0);
-  });
-  const wuiRouter = shadowRoot.childNodes[2].childNodes[1].childNodes[3];
-  const wrapper = wuiRouter.shadowRoot.childNodes[1].childNodes[1].shadowRoot;
-  const walletConnectButton = wrapper.childNodes[2].childNodes[5];
-  walletConnectButton.click();
-}
-
-// Create DID from hash
-async function authenticateDID(seed) {
-  const provider = new Ed25519Provider(seed);
-  const did = new DID({ provider, resolver: getResolver() });
-  await did.authenticate();
-  return did;
-}
-
-// Disconnects wallet account - wagmi method doesn't work by itself in the try/catch block
-async function disconnectAccount() {
-  await disconnect();
-}
-
 let awaitingSignature = ref(false);
-let shards;
+let hideW3M = ref(false);
+let promptSignature = ref(true);
+const { config } = useW3M(address, getShard, null);
+
 async function getShard(pkh) {
   const response = await compose.executeQuery(
     `query {
@@ -147,7 +41,7 @@ async function getShard(pkh) {
   );
   const shards = response.data.node.demoShardList.edges.toReversed();
   let encryptedShard;
-  console.log(shards);
+
   for (let shard of shards) {
     if (shard.node.ritual.id === store.ritualID) {
       encryptedShard = shard.node.shardValue;
@@ -155,28 +49,36 @@ async function getShard(pkh) {
     }
   }
 
+  // update UI
   awaitingSignature.value = true;
+  hideW3M.value = true;
+
   try {
-    const signature = await signMessage({
+    const signature = await signMessage(config, {
       message: "I bless this offering",
       method: "personal_sign",
     });
+
+    // create key DID from signature hash
     const seed = hash(u8a.fromString(signature.slice(2), "base16"));
-    const did = await authenticateDID(seed);
+    const provider = new Ed25519Provider(seed);
+    const did = new DID({ provider, resolver: getResolver() });
+    await did.authenticate();
     encryptedShard = encryptedShard.replace(/`/g, '"');
-    console.log(encryptedShard);
+    // console.log(encryptedShard);
     const decryptedShard = await did.decryptDagJWE(JSON.parse(encryptedShard));
     console.log(decryptedShard);
-    await disconnectAccount();
+
+    // disconnect wallet and store shard
+    await disconnect(config);
     store.gatherShard(decryptedShard);
+
+    // update UI
     awaitingSignature.value = false;
   } catch (err) {
     console.error(err);
   }
 }
-
-// TODO: Figure out why Coinbase Wallet's signature isn't successfully decrypting the shard
-// figure out why w3m-button appears 'signed out' after shardberer 2+ joins
 </script>
 
 <template>
@@ -184,8 +86,11 @@ async function getShard(pkh) {
     <div v-if="promptSignature" class="prompt-message">
       <p>Shardbearer {{ store.shardNumber }}</p>
       <p v-if="!awaitingSignature">Use your wallet to retrieve your shard.</p>
+      <p v-if="hideW3M" class="address">
+        ( <span>{{ address }}</span> )
+      </p>
       <p v-if="awaitingSignature">Awaiting signature...</p>
-      <w3m-button size="md" balance="hide" />
+      <w3m-button v-if="!hideW3M" size="md" balance="hide" />
     </div>
   </div>
 </template>
@@ -202,6 +107,13 @@ div.wrapper {
   p {
     font-size: 1.5rem;
     margin-bottom: 2rem;
+  }
+
+  .address {
+    font-size: 1rem;
+    span {
+      color: var(--purple);
+    }
   }
 }
 </style>

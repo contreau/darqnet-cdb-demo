@@ -15,21 +15,24 @@ let intentions = null;
 let intentionsDecrypted = ref(false);
 
 async function decryptIntentions() {
-  const mainSecret = await seedsplit.combine(store.shards);
-  const seed = new Uint8Array(
-    Bip39.mnemonicToSeedSync(mainSecret).slice(0, 32)
-  );
-  const provider = new Ed25519Provider(seed);
-  const did = new DID({ provider, resolver: getResolver() });
-  await did.authenticate();
+  try {
+    const mainSecret = await seedsplit.combine(store.shards);
+    const seed = new Uint8Array(
+      Bip39.mnemonicToSeedSync(mainSecret).slice(0, 32)
+    );
+    const provider = new Ed25519Provider(seed);
+    const did = new DID({ provider, resolver: getResolver() });
+    await did.authenticate();
 
-  const encryptedIntentions = store.intentions.replace(/`/g, '"');
-  const decryptedIntentions = await did.decryptDagJWE(
-    JSON.parse(encryptedIntentions)
-  );
-  intentions = ref(decryptedIntentions);
-  intentionsDecrypted.value = true;
-  console.log(decryptIntentions);
+    const encryptedIntentions = store.intentions.replace(/`/g, '"');
+    const decryptedIntentions = await did.decryptDagJWE(
+      JSON.parse(encryptedIntentions)
+    );
+    intentions = ref(decryptedIntentions);
+    intentionsDecrypted.value = true;
+  } catch (e) {
+    console.error(e);
+  }
 }
 </script>
 

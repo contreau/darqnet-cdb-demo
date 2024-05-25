@@ -58,7 +58,6 @@ export const store = reactive({
   threshold: 0,
   acquiredPT: false,
   shards: null,
-  signatureDIDs: [],
 
   async splitMainSecret() {
     this.shards = await seedsplit.split(
@@ -115,9 +114,11 @@ export const store = reactive({
       this.participantLabel++;
       if (incrementShardbearerLabel) {
         this.shardBearerLabel++;
+        this.shardIndex++;
+        this.rerender = !this.rerender; // trigger rerender of component
+      } else {
+        this.rerender = !this.rerender; // trigger rerender of component
       }
-      this.shardIndex++;
-      this.rerender = !this.rerender; // trigger rerender of component
     } else if (this.participantLabel === this.participants) {
       this.acquiredIntentions = true;
       console.log(this.intentions);
@@ -158,7 +159,9 @@ export const store = reactive({
   gatherShard(shard) {
     if (this.shards === null) {
       this.shards = [];
-      this.ritualSelected = true;
+      setTimeout(() => {
+        this.ritualSelected = true;
+      }, 100);
     }
     if (this.shardNumber < this.threshold) {
       this.shards.push(shard);

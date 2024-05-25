@@ -1,134 +1,50 @@
 <script setup>
 import { ref } from "vue";
 import { onMounted } from "vue";
-import { store, ceramic, compose } from "../store";
-import { createWeb3Modal, defaultWagmiConfig } from "@web3modal/wagmi/vue";
-import { watchAccount, signMessage, disconnect } from "@wagmi/core";
-import { mainnet, arbitrum } from "viem/chains";
+import { store, compose } from "../store";
+import { signMessage, disconnect } from "@wagmi/core";
 import { DID } from "dids";
 import { Ed25519Provider } from "key-did-provider-ed25519";
 import { getResolver } from "key-did-resolver";
 import * as u8a from "uint8arrays";
 import { hash } from "@stablelib/sha256";
-import { getWalletClient } from "@wagmi/core";
-import { EthereumWebAuth, getAccountId } from "@didtools/pkh-ethereum";
-import { DIDSession } from "did-session";
+import { useW3M } from "../../js/useW3M";
 
-const projectId = "c6c57240c4eee81a0f1fc1b23c905bea";
+const props = defineProps(["shardIndex"]);
+
+// component state
+let address = ref("");
+let promptSignature = ref(false);
+let awaitingSignature = ref(false);
+let hideW3M = ref(false);
 let signButton;
-
+let isVisible = ref(false);
+const { config } = useW3M(address, executeSignature, props.shardIndex);
 onMounted(() => {
   signButton = document.querySelector(".sign-button");
   console.log("shard index:", props.shardIndex);
 });
 
-const props = defineProps(["shardIndex"]);
-
-// * * * * * * * * * * * * * * * * * *
-// WAGMI CONFIG / MODAL INSTANTIATION
-// * * * * * * * * * * * * * * * * * *
-
-const metadata = {
-  name: "Darqnet Wallet Demo",
-  description: "Darqnet Wallet Demo",
-  url: "https://web3modal.com", // don't change this or qr doesn't work
-  icons: [""],
-};
-
-const chains = [mainnet, arbitrum];
-const wagmiConfig = defaultWagmiConfig({ chains, projectId, metadata });
-
-const modal = createWeb3Modal({
-  wagmiConfig,
-  projectId,
-  chains,
-  themeVariables: {
-    "--w3m-font-family": "system-ui",
-    "--w3m-font-size-master": "12px",
-    "--w3m-accent": "#1942F9",
-  },
-});
-
-// Modal event subscription
-let currentlySignedIn = false; // toggled boolean to ensure that showQRCode() is only run upon signing in
-
-modal.subscribeEvents((event) => {
-  if (event.data.event === "MODAL_OPEN" && !currentlySignedIn) {
-    showQRCode();
-  }
-  // console.log(event);
-});
-
-// watches web3 modal for changes
-let showAddress = ref(false);
-let address = ref("");
-watchAccount(async (account) => {
-  // console.log("account changes:", account);
-  if (account.isConnected) {
-    const walletClient = await getWalletClient(wagmiConfig);
-    const accountId = await getAccountId(
-      walletClient,
-      walletClient.account.address
-    );
-    const authMethod = await EthereumWebAuth.getAuthMethod(
-      walletClient,
-      accountId
-    );
-    // grab accountId and authMethod from ritual leader for session management later
-    if (props.shardIndex === 0) {
-      store.firstAccountId = accountId;
-      store.firstAccountAuthMethod = authMethod;
-    }
-    // change to use specific resource
-    const session = await DIDSession.get(accountId, authMethod, {
-      resources: compose.resources,
-    });
-    ceramic.did = session.did;
-    console.log("Auth'd:", session.did.parent);
-    currentlySignedIn = true;
-    getWalletInfo(account.address);
-    address.value = account.address;
-    showAddress.value = true;
-  }
-  if (account.isDisconnected) {
-    currentlySignedIn = false;
-  }
-});
-
-// * * * * * * * * *
-// HELPER FUNCTIONS
-// * * * * * * * * *
-
-async function showQRCode() {
-  const modalParent = document.querySelector("w3m-modal");
-  let shadowRoot;
-  await new Promise((resolve) => {
-    setTimeout(() => {
-      shadowRoot = modalParent.shadowRoot;
-      resolve(null);
-    }, 0);
-  });
-  const wuiRouter = shadowRoot.childNodes[2].childNodes[1].childNodes[3];
-  const wrapper = wuiRouter.shadowRoot.childNodes[1].childNodes[1].shadowRoot;
-  const walletConnectButton = wrapper.childNodes[2].childNodes[5];
-  walletConnectButton.click();
-}
-
 async function executeSignature() {
   // change text in button
-  signButton.innerText = "Check your mobile wallet";
+  promptSignature.value = true;
+  awaitingSignature.value = true;
+  hideW3M.value = true;
+  signButton.innerText = "Awaiting Signature...";
   try {
-    const signature = await signMessage({
+    const signature = await signMessage(config, {
       message: "I bless this offering",
       method: "personal_sign",
     });
-    const seed = hash(u8a.fromString(signature.slice(2), "base16"));
-    const did = await authenticateDID(seed);
-    store.signatureDIDs = [...store.signatureDIDs, did.id];
-    console.log("users:", store.signatureDIDs);
 
+    // create key DID from signature hash
+    const seed = hash(u8a.fromString(signature.slice(2), "base16"));
+    const provider = new Ed25519Provider(seed);
+    const did = new DID({ provider, resolver: getResolver() });
+    await did.authenticate();
+
+    // if first user, create the ritual on ComposeDB
     if (props.shardIndex === 0) {
-      // if first user, create the ritual
       const ritual = await compose.executeQuery(
         `mutation {
         createDemoRitual(
@@ -164,6 +80,7 @@ async function executeSignature() {
     ]);
     const encryptedShard = JSON.stringify(jwe).replace(/"/g, "`");
 
+    // create the user's shard on ComposeDB
     const shardOnDB = await compose.executeQuery(`
       mutation {
         createDemoShard(
@@ -185,8 +102,13 @@ async function executeSignature() {
 
     console.log(shardOnDB);
 
-    await disconnectAccount();
+    // disconnect wallet and store intentions
+    await disconnect(config);
     store.processUser(true);
+
+    // update UI
+    promptSignature.value = false;
+    awaitingSignature.value = false;
   } catch (err) {
     console.error(err);
     signButton.innerText = "Signature rejected.";
@@ -195,55 +117,46 @@ async function executeSignature() {
     }, 2000);
   }
 }
-
-// Retrieves wallet address and reveals signature button
-let account = ref("");
-let isVisible = ref(false);
-async function getWalletInfo(accountAddress) {
-  account.value = await new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(accountAddress);
-    }, 10);
-  });
-  isVisible.value = true;
-}
-
-// Create DID from hash
-async function authenticateDID(seed) {
-  const provider = new Ed25519Provider(seed);
-  const did = new DID({ provider, resolver: getResolver() });
-  await did.authenticate();
-  return did;
-}
-
-// Disconnects wallet account - wagmi method doesn't work by itself in the try/catch block
-async function disconnectAccount() {
-  await disconnect();
-}
 </script>
 
 <template>
   <div class="wrapper">
     <p>You are Shardbearer {{ store.shardBearerLabel }}</p>
-    <div class="modal-container">
-      <w3m-button v-if="!showAddress" size="md" balance="hide" />
+    <div v-if="promptSignature" class="prompt-message">
+      <p class="address">
+        ( <span>{{ address }}</span> )
+      </p>
+      <p v-if="awaitingSignature">Awaiting signature...</p>
     </div>
-    <p v-if="showAddress">Welcome, {{ address }}.</p>
+    <w3m-button v-if="!hideW3M" size="md" balance="hide" />
   </div>
-  <div class="sign-container">
+  <!-- <div class="sign-container">
     <button
       class="sign-button"
       :class="{ visible: isVisible }"
-      @click="executeSignature(account)"
+      @click="executeSignature(address)"
     >
       I bless this offering
     </button>
-  </div>
+  </div> -->
 </template>
 
 <style scoped>
 .wrapper {
   text-align: center;
+
+  .shardbearer-label {
+    margin-top: 5rem;
+    margin-bottom: 2rem;
+  }
+
+  .address {
+    font-size: 1rem;
+
+    span {
+      color: var(--purple);
+    }
+  }
 }
 .modal-container {
   display: flex;
@@ -251,7 +164,7 @@ async function disconnectAccount() {
 }
 .sign-button {
   display: block;
-  margin: 2rem auto;
+  margin: 0 auto;
   font: inherit;
   padding: 0.5em 1em;
   border-radius: 30px;
