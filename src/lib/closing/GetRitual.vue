@@ -123,8 +123,6 @@ async function processSelection(listItem) {
   </div>
 </template>
 
-<!-- TODO: handle canceling of signature to reset the login button / go back to previous step - this would handle someone deciding to no longer be a shardbearer even after it prompted them to sign -->
-
 <style scoped>
 div.wrapper {
   text-align: center;
