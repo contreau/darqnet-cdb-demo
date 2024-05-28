@@ -34,7 +34,10 @@ import RevealIntentions from "./lib/closing/RevealIntentions.vue";
   <PushToComposeDB v-if="store.acquiredIntentions" />
 
   <!-- CLOSING CEREMONY -->
-  <GetRitual v-if="store.ceremonyType === 'close' && !store.ritualSelected" />
+  <GetRitual
+    v-if="store.ceremonyType === 'close' && !store.ritualSelected"
+    :key="store.rerender"
+  />
   <GetShards
     v-if="store.ritualSelected && !store.acquiredClosingShards"
     :key="store.rerender"

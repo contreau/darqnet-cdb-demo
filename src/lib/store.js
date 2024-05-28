@@ -22,6 +22,7 @@ export const store = reactive({
   acquiredNameDate: false,
   concludedOpeningCeremony: false,
   ritualKey: null,
+  walletRerender: false,
 
   // session
   firstAccountId: null,

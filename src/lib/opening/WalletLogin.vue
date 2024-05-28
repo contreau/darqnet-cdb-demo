@@ -17,11 +17,8 @@ let address = ref("");
 let promptSignature = ref(false);
 let awaitingSignature = ref(false);
 let hideW3M = ref(false);
-let signButton;
-let isVisible = ref(false);
 const { config } = useW3M(address, executeSignature, props.shardIndex);
 onMounted(() => {
-  signButton = document.querySelector(".sign-button");
   console.log("shard index:", props.shardIndex);
 });
 
@@ -30,7 +27,6 @@ async function executeSignature() {
   promptSignature.value = true;
   awaitingSignature.value = true;
   hideW3M.value = true;
-  signButton.innerText = "Awaiting Signature...";
   try {
     const signature = await signMessage(config, {
       message: "I bless this offering",
@@ -111,10 +107,8 @@ async function executeSignature() {
     awaitingSignature.value = false;
   } catch (err) {
     console.error(err);
-    signButton.innerText = "Signature rejected.";
-    setTimeout(() => {
-      signButton.innerText = "I bless this offering";
-    }, 2000);
+    await disconnect(config);
+    store.walletRerender = !store.walletRerender;
   }
 }
 </script>
@@ -130,15 +124,6 @@ async function executeSignature() {
     </div>
     <w3m-button v-if="!hideW3M" size="md" balance="hide" />
   </div>
-  <!-- <div class="sign-container">
-    <button
-      class="sign-button"
-      :class="{ visible: isVisible }"
-      @click="executeSignature(address)"
-    >
-      I bless this offering
-    </button>
-  </div> -->
 </template>
 
 <style scoped>

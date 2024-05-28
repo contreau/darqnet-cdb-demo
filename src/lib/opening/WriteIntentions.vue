@@ -62,6 +62,7 @@ const props = defineProps(["participantLabel", "shardIndex"]);
       store.chosenShardbearers.includes(props.participantLabel - 1)
     "
     :shardIndex="props.shardIndex"
+    :key="store.walletRerender"
   />
 </template>
 

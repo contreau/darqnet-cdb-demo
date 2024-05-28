@@ -77,6 +77,8 @@ async function getShard(pkh) {
     awaitingSignature.value = false;
   } catch (err) {
     console.error(err);
+    await disconnect(config);
+    store.rerender = !store.rerender;
   }
 }
 </script>

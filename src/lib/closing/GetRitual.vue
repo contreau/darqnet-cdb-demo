@@ -85,6 +85,9 @@ async function processSelection(listItem) {
     promptSignature.value = false;
   } catch (err) {
     console.error(err);
+    await disconnect(config);
+    store.rerender = !store.rerender;
+    store.gotRitualList = !store.gotRitualList;
   }
 }
 </script>
