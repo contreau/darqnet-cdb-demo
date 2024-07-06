@@ -1,8 +1,8 @@
 <script setup>
-import { ref } from "vue";
 import { store } from "./lib/store";
 import Header from "../src/lib/Header.vue";
 import ChooseCeremony from "./lib/opening/ChooseCeremony.vue";
+import CreatePrompts from "./lib/opening/CreatePrompts.vue";
 import NameDate from "./lib/opening/NameDate.vue";
 import GetPT from "./lib/opening/GetPT.vue";
 import WriteIntentions from "./lib/opening/WriteIntentions.vue";
@@ -25,11 +25,12 @@ import RevealIntentions from "./lib/closing/RevealIntentions.vue";
     "
   />
   <GetPT v-if="store.acquiredNameDate && !store.acquiredPT" />
+  <CreatePrompts v-if="store.acquiredPT && !store.acquiredPrompts" />
   <WriteIntentions
     :participantLabel="store.participantLabel"
     :shardIndex="store.shardIndex"
     :key="store.rerender"
-    v-if="store.acquiredPT && !store.acquiredIntentions"
+    v-if="store.acquiredPrompts && !store.acquiredIntentions"
   />
   <PushToComposeDB v-if="store.acquiredIntentions" />
 

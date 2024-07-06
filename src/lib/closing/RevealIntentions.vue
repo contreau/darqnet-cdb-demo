@@ -39,33 +39,39 @@ async function decryptIntentions() {
 <template>
   <div class="wrapper" v-if="intentionsDecrypted">
     <h3>Retrieved Intentions:</h3>
-    <p>{{ intentions.dp }}</p>
-    <ul>
-      <li v-for="(item, index) in intentions.d">
-        Participant {{ index + 1 }}
-        <ul>
-          <li>{{ item }}</li>
-        </ul>
-      </li>
-    </ul>
-    <p>{{ intentions.cp }}</p>
-    <ul>
-      <li v-for="(item, index) in intentions.c">
-        Participant {{ index + 1 }}
-        <ul>
-          <li>{{ item }}</li>
-        </ul>
-      </li>
-    </ul>
-    <p>{{ intentions.ep }}</p>
-    <ul>
-      <li v-for="(item, index) in intentions.e">
-        Participant {{ index + 1 }}
-        <ul>
-          <li>{{ item }}</li>
-        </ul>
-      </li>
-    </ul>
+    <div v-if="intentions.p1">
+      <p>{{ intentions.p1 }}</p>
+      <ul>
+        <li v-for="(item, index) in intentions.r1">
+          Participant {{ index + 1 }}
+          <ul>
+            <li>{{ item }}</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div v-if="intentions.p2">
+      <p>{{ intentions.p2 }}</p>
+      <ul>
+        <li v-for="(item, index) in intentions.r2">
+          Participant {{ index + 1 }}
+          <ul>
+            <li>{{ item }}</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
+    <div v-if="intentions.p3">
+      <p>{{ intentions.p3 }}</p>
+      <ul>
+        <li v-for="(item, index) in intentions.r3">
+          Participant {{ index + 1 }}
+          <ul>
+            <li>{{ item }}</li>
+          </ul>
+        </li>
+      </ul>
+    </div>
   </div>
 </template>
 

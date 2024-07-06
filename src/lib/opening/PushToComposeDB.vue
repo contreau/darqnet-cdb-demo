@@ -30,24 +30,19 @@ async function checkForActiveSession() {
 
 async function executeSignature() {
   try {
-    const cp = "what will you conjure by the summer solstice?";
-    const ep = "feel into the moment and capture its essence.";
-    const dp = "what is your biggest dream for the new year?";
-    const c = store.intentions.conjurations;
-    const e = store.intentions.essence;
-    const d = store.intentions.dreams;
+    const cleartext = {};
+    const temp = [];
+    for (let response in store.intentions) {
+      temp.push(store.intentions[response]);
+    }
+    for (let i = 0; i < temp.length; i++) {
+      cleartext[`p${i + 1}`] = store.prompts[i];
+      cleartext[`r${i + 1}`] = temp[i];
+    }
 
-    const jwe = await store.ritualKey.createDagJWE(
-      {
-        cp,
-        ep,
-        dp,
-        c,
-        e,
-        d,
-      },
-      [store.ritualKey.id]
-    );
+    const jwe = await store.ritualKey.createDagJWE(cleartext, [
+      store.ritualKey.id,
+    ]);
     const encryptedIntentions = JSON.stringify(jwe).replace(/"/g, "`");
     const updatedRitual = await compose.executeQuery(`
       mutation {

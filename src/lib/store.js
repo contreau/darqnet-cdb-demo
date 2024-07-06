@@ -59,6 +59,9 @@ export const store = reactive({
   threshold: 0,
   acquiredPT: false,
   shards: null,
+  promptCount: 0,
+  acquiredPrompts: false,
+  prompts: null,
 
   async splitMainSecret() {
     this.shards = await seedsplit.split(
@@ -94,19 +97,24 @@ export const store = reactive({
     console.log("chosen shardbearers:", this.chosenShardbearers);
   },
 
+  savePrompts(prompts) {
+    this.prompts = prompts;
+    this.acquiredPrompts = true;
+  },
+
   // intentions submission
   acquiredIntentions: false,
   rerender: false,
   intentions: {
-    dreams: [],
-    conjurations: [],
-    essence: [],
+    prompt1Responses: [],
+    prompt2Responses: [],
+    prompt3Responses: [],
   },
 
-  async saveIntentions(d, c, e) {
-    this.intentions.dreams.push(d);
-    this.intentions.conjurations.push(c);
-    this.intentions.essence.push(e);
+  async saveIntentions(a, b, c) {
+    this.intentions.prompt1Responses.push(a);
+    this.intentions.prompt2Responses.push(b);
+    this.intentions.prompt3Responses.push(c);
     console.log(this.intentions);
   },
 

@@ -1,38 +1,82 @@
 <script setup>
-import { onMounted } from "vue";
+import { onMounted, onBeforeMount } from "vue";
 import { store } from "../store";
-import { ref } from "vue";
+import { ref, reactive } from "vue";
 import WalletLogin from "./WalletLogin.vue";
 
-let gotDreams = ref(false);
-let gotConjurations = ref(false);
-let gotEssence = ref(false);
-let dreams = "";
-let conjurations = "";
-let essence = "";
+let gotPrompt1 = ref(false);
+let gotPrompt2 = ref(false);
+let gotPrompt3 = ref(false);
+let response1 = "";
+let response2 = "";
+let response3 = "";
 let input;
+let gotLastResponse = ref(false);
+let prompts = null;
+let tracker = null;
+
+onBeforeMount(() => {
+  prompts = store.prompts;
+  tracker = new responseTracker(prompts);
+  console.log(tracker);
+});
 
 onMounted(() => {
   input = document.querySelector("input");
   input.focus();
 });
 
+function responseTracker(prompts) {
+  return reactive({
+    numberOfPrompts: prompts.length,
+    promptsAnswered: 0,
+    currentPrompt: prompts[0],
+    currentPromptIndex: 0,
+    incrementAnswers() {
+      if (this.currentPromptIndex === 0) {
+        store.intentions.prompt1Responses.push(input.value.trim());
+      }
+      if (this.currentPromptIndex === 1) {
+        store.intentions.prompt2Responses.push(input.value.trim());
+      }
+      if (this.currentPromptIndex === 2) {
+        store.intentions.prompt3Responses.push(input.value.trim());
+      }
+      this.promptsAnswered++;
+      if (this.promptsAnswered === this.numberOfPrompts) {
+        response3 = input.value;
+        input.value = "";
+        console.log(store.intentions);
+        gotLastResponse.value = true;
+        if (!store.chosenShardbearers.includes(props.participantLabel - 1)) {
+          store.processUser(false);
+        }
+      } else {
+        input.value = "";
+        input.focus();
+        this.currentPromptIndex++;
+        this.currentPrompt = prompts[this.currentPromptIndex];
+      }
+    },
+  });
+}
+
 async function pushIntentions() {
-  if (!gotDreams.value) {
-    dreams = input.value;
-    gotDreams.value = true;
+  if (!gotPrompt1.value) {
+    response1 = input.value;
+    gotPrompt1.value = true;
     input.value = "";
     input.focus();
-  } else if (!gotConjurations.value) {
-    conjurations = input.value;
-    gotConjurations.value = true;
+  } else if (!gotPrompt2.value) {
+    response2 = input.value;
+    gotPrompt2.value = true;
     input.value = "";
     input.focus();
-  } else if (gotDreams.value && gotConjurations.value) {
-    essence = input.value;
+  } else if (gotPrompt1.value && gotPrompt2.value) {
+    response3 = input.value;
     input.value = "";
-    gotEssence.value = true;
-    store.saveIntentions(dreams, conjurations, essence);
+    gotPrompt3.value = true;
+    store.saveIntentions(response1, response2, response3);
     if (!store.chosenShardbearers.includes(props.participantLabel - 1)) {
       store.processUser(false);
     }
@@ -44,21 +88,14 @@ const props = defineProps(["participantLabel", "shardIndex"]);
 
 <template>
   <h3>Participant {{ props.participantLabel }}</h3>
-  <div class="wrapper" v-if="!gotEssence">
-    <p>
-      <span v-if="!gotDreams">What are your dreams for the new year?</span>
-      <span v-else-if="!gotConjurations"
-        >What will you conjure by the summer solstice?</span
-      >
-      <span v-else>Feel into the moment and capture its essence.</span>
-    </p>
-
+  <div class="wrapper" v-if="!gotLastResponse">
+    <p>{{ tracker.currentPrompt }}</p>
     <input type="text" />
-    <button @click="pushIntentions">ᐅ</button>
+    <button @click="tracker.incrementAnswers()">ᐅ</button>
   </div>
   <WalletLogin
     v-if="
-      gotEssence &&
+      gotLastResponse &&
       store.chosenShardbearers.includes(props.participantLabel - 1)
     "
     :shardIndex="props.shardIndex"
